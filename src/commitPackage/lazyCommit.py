@@ -8,6 +8,8 @@ client = MongoClient(
     "mongodb+srv://sms10010:Password@cluster0.jrofj.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0", tlsCAFile=certifi.where())
 db = client["lazyCommit"]
 commit_collection = db["commitMessages"]
+excuse_collection = db["excuses"]
+haiku_collection = db["haikus"]
 excusesDB = db["excuses"]
 hakiuDB = db["haikus"]
 
@@ -73,3 +75,69 @@ def add_commit_message(style: str, message: str):
             return f"New style '{style}' created and message added successfully."
         else:
             return "Failed to add message."
+
+
+def add_excuse(message: str):
+    if not message:
+        return "No message provided!"
+
+    message = message[0]
+    existing_excuses = excuse_collection.find_one(
+        {"excuses": {"$exists": True}})
+
+    if existing_excuses:
+        if message in existing_excuses["excuses"]:
+            return "Excuse already exists!"
+
+        result = excuse_collection.update_one(
+            {"_id": existing_excuses["_id"]},
+            {"$push": {"excuses": message}}
+        )
+
+        if result.modified_count > 0:
+            return "Excuse added successfully."
+        else:
+            return "Failed to add excuse."
+    else:
+        new_excuse_doc = {
+            "excuses": [message]
+        }
+        result = excuse_collection.insert_one(new_excuse_doc)
+
+        if result.inserted_id:
+            return "New excuse document created and excuse added successfully."
+        else:
+            return "Failed to create a new excuse document."
+
+
+def add_haiku(message: str):
+    if not message:
+        return "No message provided!"
+
+    message = message[0]
+    existing_haikus = haiku_collection.find_one(
+        {"haikus": {"$exists": True}})
+
+    if existing_haikus:
+        if message in existing_haikus["haikus"]:
+            return "Haiku already exists!"
+
+        result = haiku_collection.update_one(
+            {"_id": existing_haikus["_id"]},
+            {"$push": {"haikus": message}}
+        )
+
+        if result.modified_count > 0:
+            return "Haiku added successfully."
+        else:
+            return "Failed to add haiku."
+    else:
+        new_haiku_doc = {
+            "haikus": [message]
+        }
+        result = haiku_collection.insert_one(new_haiku_doc)
+
+        if result.inserted_id:
+            return "New haiku document created and haiku added successfully."
+        else:
+            return "Failed to create a new haiku document."
