@@ -3,7 +3,7 @@ requires = ["setuptools>=61.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "lazyCommit"
+name = "commitPackage"
 description = "A fun and lighthearted package for generating random and styled Git commit messages."
 version = "0.1.0"
 authors = [
@@ -29,4 +29,4 @@ dev = ["pytest"]
 "Bug Tracker" = "https://github.com/your-username/lazyCommit/issues"
 
 [project.scripts]
-lazycommit = "lazyCommit.__main__:main"
+commitPackage = "commitPackage.__main__:main"
