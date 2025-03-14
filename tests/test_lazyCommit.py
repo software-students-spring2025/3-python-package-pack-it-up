@@ -22,11 +22,16 @@ class Tests:
         ]
 
         mock_collection.find.return_value = mock_data
+        lazyCommit.db.commitMessages = mock_collection # Patch lazyCommit.db to return the mock collection
 
-        # Patch lazyCommit.db to return the mock collection
-        lazyCommit.db.commitMessages = mock_collection
+        # Create another mock collection for excuses
+        mock_excuses = MagicMock()  
+        mock_excuses_data =  [{"excuses": ["I blame it on my partner", "I spilled my coffee"]}]
+
+        mock_excuses.find.return_value = mock_excuses_data
+        lazyCommit.db.excuses = mock_excuses
         
-        return mock_collection
+        return {"commitMessages": mock_collection, "excuses": mock_excuses}
 
     # Test functions
 
@@ -40,15 +45,17 @@ class Tests:
         assert result in ["Fixed a typo that nobody noticed.", "Added a space. Hope this helps.", "Fix bug", "Refactor code", "Update docs"], \
             f"Expected a valid commit message but got '{result}'"
 
+
     def test_random_commit_message_no_data(self, mock_db):
         """
         Test case when no commit messages exist.
         """
-        mock_db.find.return_value = []  # Simulate no commit messages
+        mock_db["commitMessages"].find.return_value = []  # Simulate no commit messages
 
         result = lazyCommit.random_commit_message()
         assert result == "No commit messages found!", \
             f"Expected 'No commit messages found!' but got '{result}'"
+
 
     def test_random_commit_message_aggregates_all_messages(self, mock_db):
         """
@@ -79,10 +86,10 @@ class Tests:
 
         # Simulate MongoDB behavior: filter messages by style
         def mock_find(query):
-            return [doc for doc in mock_db.find.return_value if doc["style"] == query.get("style")]
+            return [doc for doc in mock_db["commitMessages"].find.return_value if doc["style"] == query.get("style")]
 
         # Override the default behavior of find() to simulate MongoDB filtering when a user inputs a style query
-        mock_db.find.side_effect = mock_find 
+        mock_db["commitMessages"].find.side_effect = mock_find 
 
         # Testing style: funny
         result = lazyCommit.generate_commit_message("funny")
@@ -94,6 +101,7 @@ class Tests:
         expected_serious_messages = ["Fix bug", "Refactor code", "Update docs"]
         assert result_serious in expected_serious_messages, (f"Expected a message from 'serious' style but got '{result_serious}'")
 
+   
     def test_generate_commit_message_no_matching_style(self, mock_db):
         """
         Test case to ensure that when a user requests a style that does not exist,
@@ -101,16 +109,17 @@ class Tests:
         """
         # Simulate MongoDB behavior: filter messages by style
         def mock_find(query):
-            return [doc for doc in mock_db.find.return_value if doc["style"] == query.get("style")]
+            return [doc for doc in mock_db["commitMessages"].find.return_value if doc["style"] == query.get("style")]
 
         # Override the default behavior of find() to simulate MongoDB filtering
-        mock_db.find.side_effect = mock_find 
+        mock_db["commitMessages"].find.side_effect = mock_find 
 
         # Testing a non-existent style: "nostalgic"
         result = lazyCommit.generate_commit_message("nostalgic")
         expected_message = "No commit messages found for style: nostalgic"
 
         assert result == expected_message, (f"Expected '{expected_message}' but got '{result}'")
+    
     
     def test_generate_commit_message_empty_messages(self, mock_db):
         """
@@ -120,9 +129,56 @@ class Tests:
         def mock_find(query):
             return [{"style": "empty_style", "messages": []}]  
 
-        mock_db.find.side_effect = mock_find 
+        mock_db["commitMessages"].find.side_effect = mock_find 
 
         result = lazyCommit.generate_commit_message("empty_style")
         expected_message = "No commit messages found for style: empty_style"
 
         assert result == expected_message, (f"Expected '{expected_message}' but got '{result}'")
+
+#--------------------------------------------GIT BLAME EXCUSE--------------------------------------------------
+
+    def test_git_blame_excuse_with_data(self, mock_db):
+        """
+        Test case to ensure a random excuse is returned when excuses exist.
+        """
+        result = lazyCommit.git_blame_excuse()
+        expected_excuses = ["I blame it on my partner", "I spilled my coffee"]
+
+        assert result in expected_excuses, (
+            f"Expected one of {expected_excuses} but got '{result}'"
+        )
+
+    
+    def test_git_blame_excuse_empty_list(self, mock_db):
+        """
+        Test case to ensure the function returns 'No excuses found!' when excuses exist but the list is empty.
+        """
+        def mock_find():
+            return [{"excuses": []}]  # Key exists but no values assigned
+
+        mock_db["excuses"].find.side_effect = mock_find
+
+        result = lazyCommit.git_blame_excuse()
+        expected_message = "No excuses found!"
+
+        assert result == expected_message, (
+            f"Expected '{expected_message}' but got '{result}'"
+        )
+
+
+    def test_git_blame_excuse_no_data(self, mock_db):
+        """
+        Test case to ensure the function handles an empty database collection properly.
+        """
+        def mock_find():
+            return []  # No documents in the database
+
+        mock_db["excuses"].find.side_effect = mock_find
+
+        result = lazyCommit.git_blame_excuse()
+        expected_message = "No excuses found!"
+
+        assert result == expected_message, (
+            f"Expected '{expected_message}' but got '{result}'"
+        )
