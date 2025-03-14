@@ -30,8 +30,15 @@ class Tests:
 
         mock_excuses.find.return_value = mock_excuses_data
         lazyCommit.db.excuses = mock_excuses
+
+        # Create another mock collection for haikus
+        mock_haikus = MagicMock()  
+        mock_haikus_data =  [{"haikus": ["My code flows like a river", "Like a setting sun, my code disappeared"]}]
+
+        mock_haikus.find.return_value = mock_haikus_data
+        lazyCommit.db.haikus = mock_haikus
         
-        return {"commitMessages": mock_collection, "excuses": mock_excuses}
+        return {"commitMessages": mock_collection, "excuses": mock_excuses, "haikus": mock_haikus}
 
     # Test functions
 
@@ -178,6 +185,53 @@ class Tests:
 
         result = lazyCommit.git_blame_excuse()
         expected_message = "No excuses found!"
+
+        assert result == expected_message, (
+            f"Expected '{expected_message}' but got '{result}'"
+        )
+
+#--------------------------------------------GENERATE HAIKU--------------------------------------------------
+
+    def test_generate_haiku_with_data(self, mock_db):
+        """
+        Test case to ensure a random haiku is returned when haikus exist.
+        """
+        result = lazyCommit.generate_haiku()
+        expected_haikus = ["My code flows like a river", "Like a setting sun, my code disappeared"]
+
+        assert result in expected_haikus, (
+            f"Expected one of {expected_haikus} but got '{result}'"
+        )
+
+    
+    def test_generate_haiku_empty_list(self, mock_db):
+        """
+        Test case to ensure the function returns 'No haikus found!' when haikus exist but the list is empty.
+        """
+        def mock_find():
+            return [{"haikus": []}]  # Key exists but no values assigned
+
+        mock_db["haikus"].find.side_effect = mock_find
+
+        result = lazyCommit.generate_haiku()
+        expected_message = "No haikus found!"
+
+        assert result == expected_message, (
+            f"Expected '{expected_message}' but got '{result}'"
+        )
+
+
+    def test_generate_haiku_no_data(self, mock_db):
+        """
+        Test case to ensure the function handles an empty database collection properly.
+        """
+        def mock_find():
+            return []  # No documents in the database
+
+        mock_db["haikus"].find.side_effect = mock_find
+
+        result = lazyCommit.generate_haiku()
+        expected_message = "No haikus found!"
 
         assert result == expected_message, (
             f"Expected '{expected_message}' but got '{result}'"
