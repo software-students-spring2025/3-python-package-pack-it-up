@@ -24,9 +24,9 @@ classifiers = [
 dev = ["pytest"]
 
 [project.urls]
-"Homepage" = "https://github.com/your-username/lazyCommit"
-"Repository" = "https://github.com/your-username/lazyCommit.git"
-"Bug Tracker" = "https://github.com/your-username/lazyCommit/issues"
+"Homepage" = "https://github.com/software-students-spring2025/3-python-package-pack-it-up"
+"Repository" = "https://github.com/software-students-spring2025/3-python-package-pack-it-up.git"
+"Bug Tracker" = "https://github.com/software-students-spring2025/3-python-package-pack-it-up/issues"
 
 [project.scripts]
 commitPackage = "commitPackage.__main__:main"
