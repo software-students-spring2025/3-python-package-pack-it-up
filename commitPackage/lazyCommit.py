@@ -14,6 +14,7 @@ excusesDB = db["excuses"]
 hakiuDB = db["haikus"]
 
 
+#COMPLETED TESTS 
 def random_commit_message():
     messages = list(db.commitMessages.find())
     if messages:
@@ -22,6 +23,7 @@ def random_commit_message():
     return "No commit messages found!"
 
 
+#COMPLETED TESTS
 def generate_commit_message(style: str):
     messages = list(db.commitMessages.find({"style": style}))
     if messages:
@@ -29,7 +31,7 @@ def generate_commit_message(style: str):
         return random.choice(all_messages) if all_messages else f"No commit messages found for style: {style}"
     return f"No commit messages found for style: {style}"
 
-
+#COMPLETED TESTS 
 def git_blame_excuse():
     excuses_data = list(db.excuses.find())
     if excuses_data:
@@ -38,7 +40,7 @@ def git_blame_excuse():
             return random.choice(excuses)
     return "No excuses found!"
 
-
+#COMPLETED TESTS 
 def generate_haiku():
     haikus = list(db.haikus.find())
     if haikus:
@@ -48,29 +50,42 @@ def generate_haiku():
     return "No haikus found!"
 
 
-def add_commit_message(style: str, message: str):
+def add_commit_message(style: str, message: str): 
+    #if message is empty, return "no message provided"
     if not message:
-        return "No message provided!"
+        return "No message provided!" 
+    
+    #Queries database to see if style defined exists in database
     existing_style = commit_collection.find_one({"style": style})
 
+    #if it exists, use db #push to add new message to existing array of messags in that style 
     if existing_style:
-        result = commit_collection.update_one(
+        result = commit_collection.update_one( 
+            #finds query of "style" 
+            #pushes message to that query
             {"style": style},
             {"$push": {"messages": message}}
         )
+        
+        #NOTE: resul.modifed_count returns 1 if operation successful, 0 of no modification made 
 
+        #modification successful 
         if result.modified_count > 0:
             return f"Message added successfully to the '{style}' style."
         else:
-            return f"Message already exists in the '{style}' style."
+            return f"Message already exists in the '{style}' style." 
+    
+    #if style does not exist, creates new document with style and message
     else:
         new_commit = {
             "style": style,
             "messages": [message]
         }
-
+        
+        #inserts document into commitMessages collection 
         result = commit_collection.insert_one(new_commit)
-
+        
+        #if Mongo returns ID for new document, successful insertion of new query
         if result.inserted_id:
             return f"New style '{style}' created and message added successfully."
         else:
@@ -79,9 +94,11 @@ def add_commit_message(style: str, message: str):
 
 def add_excuse(message: str):
     if not message:
-        return "No message provided!"
-
+        return "No message provided!" 
+    
+    #ERROR? 
     message = message[0]
+
     existing_excuses = excuse_collection.find_one(
         {"excuses": {"$exists": True}})
 
@@ -112,9 +129,12 @@ def add_excuse(message: str):
 
 def add_haiku(message: str):
     if not message:
-        return "No message provided!"
-
+        return "No message provided!" 
+    
+    #ERROR? 
     message = message[0]
+
+
     existing_haikus = haiku_collection.find_one(
         {"haikus": {"$exists": True}})
 
