@@ -7,8 +7,8 @@ name = "pypi"
 certifi = "*"
 pymongo = "*"
 commitPackage = {file = ".", editable = true}
-pytest = "*"
 pytest-mock = "*"
+pytest = "*"
 
 [dev-packages]
 
