@@ -1,4 +1,4 @@
-![Python build & test](https://github.com/software-students-spring2025/3-python-package-pack-it-up/actions/build.yaml/badge.svg)
+[![CI](https://github.com/software-students-spring2025/3-python-package-pack-it-up/actions/workflows/build.yml/badge.svg)](https://github.com/software-students-spring2025/3-python-package-pack-it-up/actions/workflows/build.yml)
 
 # Python Package Example
 
