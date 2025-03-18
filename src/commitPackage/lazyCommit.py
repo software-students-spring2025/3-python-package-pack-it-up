@@ -81,7 +81,6 @@ def add_excuse(message: str):
     if not message:
         return "No message provided!"
 
-    # message = message[0]
     existing_excuses = excuse_collection.find_one(
         {"excuses": {"$exists": True}})
 
@@ -114,7 +113,6 @@ def add_haiku(message: str):
     if not message:
         return "No message provided!"
 
-    # message = message[0]
     existing_haikus = haiku_collection.find_one(
         {"haikus": {"$exists": True}})
 
