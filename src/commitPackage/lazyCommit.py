@@ -10,12 +10,9 @@ db = client["lazyCommit"]
 commit_collection = db["commitMessages"]
 excuse_collection = db["excuses"]
 haiku_collection = db["haikus"]
-excusesDB = db["excuses"]
-hakiuDB = db["haikus"]
-
 
 def random_commit_message():
-    messages = list(db.commitMessages.find())
+    messages = list(commit_collection.find())
     if messages:
         all_messages = [msg for doc in messages for msg in doc["messages"]]
         return random.choice(all_messages) if all_messages else "No commit messages found!"
@@ -23,7 +20,7 @@ def random_commit_message():
 
 
 def generate_commit_message(style: str):
-    messages = list(db.commitMessages.find({"style": style}))
+    messages = list(commit_collection.find({"style": style}))
     if messages:
         all_messages = [msg for doc in messages for msg in doc["messages"]]
         return random.choice(all_messages) if all_messages else f"No commit messages found for style: {style}"
@@ -31,7 +28,10 @@ def generate_commit_message(style: str):
 
 
 def git_blame_excuse():
-    excuses_data = list(db.excuses.find())
+    excuses_data = list(excuse_collection.find())
+
+    print("Checking if mock_db is being accessed:", excuses_data)
+    
     if excuses_data:
         excuses = excuses_data[0].get("excuses", [])
         if excuses:
@@ -40,7 +40,7 @@ def git_blame_excuse():
 
 
 def generate_haiku():
-    haikus = list(db.haikus.find())
+    haikus = list(haiku_collection.find())
     if haikus:
         haiku = haikus[0].get("haikus", [])
         if haiku:
@@ -76,14 +76,18 @@ def add_commit_message(style: str, message: str):
         else:
             return "Failed to add message."
 
-
 def add_excuse(message: str):
     if not message:
         return "No message provided!"
+    
+    print("What is in the arguement?: ", {message})
 
-    message = message[0]
+    #message = message[0]
     existing_excuses = excuse_collection.find_one(
         {"excuses": {"$exists": True}})
+    
+    print(type(existing_excuses))
+    print("Retrieve existing excuses document:", existing_excuses)
 
     if existing_excuses:
         if message in existing_excuses["excuses"]:
@@ -108,7 +112,6 @@ def add_excuse(message: str):
             return "New excuse document created and excuse added successfully."
         else:
             return "Failed to create a new excuse document."
-
 
 def add_haiku(message: str):
     if not message:

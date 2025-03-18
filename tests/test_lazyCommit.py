@@ -1,7 +1,7 @@
 import pytest
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, patch
 from commitPackage import lazyCommit
-
+    
 class Tests:
     #
     # Fixtures - these are functions that can do any optional setup or teardown before or after a test function is run.
@@ -22,27 +22,28 @@ class Tests:
         ]
 
         mock_collection.find.return_value = mock_data
-        lazyCommit.db.commitMessages = mock_collection # Patch lazyCommit.db to return the mock collection
+        lazyCommit.commit_collection = mock_collection # Patch lazyCommit.db to return the mock collection
 
         # Create another mock collection for excuses
         mock_excuses = MagicMock()  
-        mock_excuses_data =  [{"excuses": ["I blame it on my partner", "I spilled my coffee"]}]
-
-        mock_excuses.find.return_value = mock_excuses_data
-        lazyCommit.db.excuses = mock_excuses
+        mock_excuses.find.return_value = [{"excuses": ["I blame it on my partner", "I spilled my coffee"]}]
+        mock_excuses.find_one.return_value = {"_id": 123123, "excuses": ["I blame it on my partner", "I spilled my coffee"]}
+        mock_excuses.insert_one.return_value = MagicMock(inserted_id="some_id")
+        mock_excuses.update_one.return_value = MagicMock(modified_count=1)
+        lazyCommit.excuse_collection = mock_excuses
 
         # Create another mock collection for haikus
         mock_haikus = MagicMock()  
-        mock_haikus_data =  [{"haikus": ["My code flows like a river", "Like a setting sun, my code disappeared"]}]
+        mock_haikus.find.return_value = [{"haikus": ["My code flows like a river", "Like a setting sun, my code disappeared"]}]
+        lazyCommit.haiku_collection = mock_haikus
 
-        mock_haikus.find.return_value = mock_haikus_data
-        lazyCommit.db.haikus = mock_haikus
-        
-        return {"commitMessages": mock_collection, "excuses": mock_excuses, "haikus": mock_haikus}
+        yield {"commitMessages": mock_collection, "excuses": mock_excuses, "haikus": mock_haikus}
 
     # Test functions
 
-    #--------------------------------------------------RANDOM COMMIT MESSAGE ---------------------------------------
+
+
+#--------------------------------------------------RANDOM COMMIT MESSAGE ---------------------------------------
 
     def test_random_commit_message_with_data(self, mock_db):
         """
@@ -90,7 +91,6 @@ class Tests:
         Test case to ensure that when a user requests a specific style,
         only messages from that style are retrieved.
         """
-
         # Simulate MongoDB behavior: filter messages by style
         def mock_find(query):
             return [doc for doc in mock_db["commitMessages"].find.return_value if doc["style"] == query.get("style")]
@@ -236,3 +236,37 @@ class Tests:
         assert result == expected_message, (
             f"Expected '{expected_message}' but got '{result}'"
         )
+
+#--------------------------------------------ADD EXCUSE ------------------------------------------------------
+    def test_add_excuse_empty_message(mock_db): 
+        """
+        Test case to check if an empty message is handled correctly
+        """
+        result = lazyCommit.add_excuse("") 
+        expected_message = "No message provided!" 
+        assert result == expected_message, f"Expected '{expected_message}' but got '{result}'"   
+    
+    def test_add_excuse_existing_excuse(mock_db): 
+        """
+        Test case to ensure there are no duplicates
+        """
+        result = lazyCommit.add_excuse("I blame it on my partner") 
+        expected_message = "Excuse already exists!" 
+        assert result == expected_message, f"Expected '{expected_message}' but got '{result}'" 
+
+    def test_add_excuse_with_existing_excuses_list(self, mock_db):
+        """
+        Test case to ensure that an excuse is added correctly when an excuse array already exists 
+        """
+        new_excuse = "This is a new excuse."
+        result = lazyCommit.add_excuse(new_excuse)
+        assert result == "Excuse added successfully."
+
+    def test_add_excuse_successfully(self, mock_db):
+        """
+        Test case to ensure that an excuse is added correctly when an excuse array doesn't exists 
+        """
+        mock_db["excuses"].find_one.return_value = None
+        new_excuse = "This is a new excuse."
+        result = lazyCommit.add_excuse(new_excuse)
+        assert result == "New excuse document created and excuse added successfully."
