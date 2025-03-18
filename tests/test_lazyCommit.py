@@ -1,19 +1,17 @@
 import pytest
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock
 from commitPackage import lazyCommit
-
+    
 class Tests:
     #
-    # Fixtures - these are functions that can do any optional setup or teardown before or after a test function is run. 
-
-    @pytest.fixture (autouse = True )
+    # Fixtures - Function to setup and teardown mock database before or after a test function is run.
+    #
+    @pytest.fixture
     def mock_db(self, mocker):
         """
         A pytest fixture that mocks the MongoDB collection find() method.
-        """ 
-
-
-        mock_commit_collection = MagicMock()  # Create a mock collection
+        """
+        mock_collection = MagicMock()  # Create a mock collection
         mock_data = [
             {"style": "funny", "messages": [
                 "Fixed a typo that nobody noticed.",
@@ -22,40 +20,35 @@ class Tests:
             {"style": "serious", "messages": ["Fix bug", "Refactor code", "Update docs"]}
         ]
 
-        mock_commit_collection.find.return_value = mock_data 
-        lazyCommit.db.commitMessages = mock_commit_collection # Patch lazyCommit.db to return the mock collection
+        mock_collection.find.return_value = mock_data
+        mock_collection.find_one.return_value = {"_id": 222333, "style": "funny", "messages": ["Fixed a typo that nobody noticed.", "Added a space. Hope this helps."]}
+        mock_collection.insert_one.return_value = MagicMock(inserted_id="some_id")
+        mock_collection.update_one.return_value = MagicMock(modified_count=1)
+        lazyCommit.commit_collection = mock_collection # Patch lazyCommit.db to return the mock collection
 
         # Create another mock collection for excuses
         mock_excuses = MagicMock()  
-        mock_excuses_data =  [{"excuses": ["I blame it on my partner", "I spilled my coffee"]}]
-        mock_excuses.find.return_value = mock_excuses_data
-        lazyCommit.db.excuses = mock_excuses
+        mock_excuses.find.return_value = [{"excuses": ["I blame it on my partner", "I spilled my coffee"]}]
+        mock_excuses.find_one.return_value = {"_id": 123123, "excuses": ["I blame it on my partner", "I spilled my coffee"]}
+        mock_excuses.insert_one.return_value = MagicMock(inserted_id="some_id")
+        mock_excuses.update_one.return_value = MagicMock(modified_count=1)
+        lazyCommit.excuse_collection = mock_excuses
 
         # Create another mock collection for haikus
         mock_haikus = MagicMock()  
-        mock_haikus_data =  [{"haikus": ["My code flows like a river", "Like a setting sun, my code disappeared"]}]
-        mock_haikus.find.return_value = mock_haikus_data
-        lazyCommit.db.haikus = mock_haikus 
+        mock_haikus.find.return_value = [{"haikus": ["My code flows like a river", "Like a setting sun, my code disappeared"]}]
+        mock_haikus.find_one.return_value = {"_id": 345345, "haikus": ["My code flows like a river", "Like a setting sun, my code disappeared"]}
+        mock_haikus.insert_one.return_value = MagicMock(inserted_id="some_id")
+        mock_haikus.update_one.return_value = MagicMock(modified_count=1)
+        lazyCommit.haiku_collection = mock_haikus
 
-        
-        #FIX YIELD 
-        yield {"commitMessages": mock_commit_collection, "excuses": mock_excuses, "haikus": mock_haikus}  
-
-        
-        #reset mock calls, data, and side effects of each test
-        mock_commit_collection.reset_mock()
-        mock_excuses.reset_mock()
-        mock_haikus.reset_mock() 
-        
-    
-       
-
+        yield {"commitMessages": mock_collection, "excuses": mock_excuses, "haikus": mock_haikus}
 
     # Test functions
 
-    #--------------------------------------------------RANDOM COMMIT MESSAGE ---------------------------------------
+#--------------------------------------------------RANDOM COMMIT MESSAGE ---------------------------------------
 
-    def test_random_commit_message_with_data(self):
+    def test_random_commit_message_with_data(self, mock_db):
         """
         Test case when commit messages exist in the database.
         """
@@ -101,7 +94,6 @@ class Tests:
         Test case to ensure that when a user requests a specific style,
         only messages from that style are retrieved.
         """
-
         # Simulate MongoDB behavior: filter messages by style
         def mock_find(query):
             return [doc for doc in mock_db["commitMessages"].find.return_value if doc["style"] == query.get("style")]
@@ -246,137 +238,127 @@ class Tests:
 
         assert result == expected_message, (
             f"Expected '{expected_message}' but got '{result}'"
-        ) 
-
+        )
 #--------------------------------------------ADD COMMIT MESSAGE --------------------------------------------------  
-    def test_add_commit_message_new_style(mock_db):  
+    
+    def test_add_commit_message_empty_message(self, mock_db):
+        """
+        Test to ensures add_commit_message properly handles an empty message when trying to insert
+        """
+        result = lazyCommit.add_commit_message("professional", "")
+        expected_message = "No message provided!"
+        assert result == expected_message, f"Expected '{expected_message}' but got '{result}'"  
 
-        #create new style to add to data base 
-        new_style = "technical" 
+    
+    def test_add_commit_message_existing_message_existing_style(self, mock_db):  
+        """
+        Test to ensure that there are no duplicate messages within the same style
+        """
+        existing_style = "funny" 
+        existing_message = "Fixed a typo that nobody noticed."
+        result = lazyCommit.add_commit_message(existing_style, existing_message) 
+        expected_message = f"Message already exists in the '{existing_style}' style."
+
+        assert result == expected_message, f"Expected '{expected_message}' but got '{result}'" 
+
+    
+    def test_add_commit_message_existing_style(self, mock_db):  
+        """
+        Test to ensure that a new message is added to an existing style
+        """
+        existing_style = "funny" 
+        new_message = "Debugged a bug that wasn’t really a bug."
+        result = lazyCommit.add_commit_message(existing_style, new_message) 
+        expected_message = f"Message added successfully to the '{existing_style}' style."
+
+        assert result == expected_message, f"Expected '{expected_message}' but got '{result}'" 
+
+    
+    def test_add_commit_message_new_style(self, mock_db):  
+        """
+        Test to ensure that a commit message with a brand new style gets added correctly
+        """
+        new_style = "very serious" 
         new_message = "improve code efficiency"     
         result = lazyCommit.add_commit_message(new_style, new_message) 
         expected_message = f"Message added successfully to the '{new_style}' style."
 
         assert result == expected_message, f"Expected '{expected_message}' but got '{result}'"
 
-
-    def test_add_commit_message_existing_style(mock_db):  
-        #test to ensure that a new message is added to an existing style
-
-        #add message to existing style 
-
-        existing_style = "funny" 
-        new_message = "Debugged a bug that wasn’t really a bug."
-
-        result = lazyCommit.add_commit_message(existing_style, new_message) 
-
-        expected_message = f"Message added successfully to the '{existing_style}' style."
-
-        assert result == expected_message, f"Expected '{expected_message}' but got '{result}'" 
-
-    def test_add_commit_message_existing_message_existing_style(mock_db):  
-        #test to ensure that an existing message results in error message when trying to append to existing style message array
-
-        #add message to existing style 
-
-        existing_style = "funny" 
-        existing_message = "Fixed a typo that nobody noticed."
-
-        result = lazyCommit.add_commit_message(existing_style, existing_message) 
-
-        expected_message = f"Message added successfully to the '{existing_style}' style."
-
-        assert result == expected_message, f"Expected '{expected_message}' but got '{result}'"
-
-
-    def test_add_commit_message_empty_message(mock_db):
-        
-            #Ensures add_commit_message properly handles an empty message when trying to insert
-            
-            # Act: Call function with an empty message
-            result = lazyCommit.add_commit_message("professional", "")
-
-            # Expected response
-            expected_message = "No message provided!"
-
-            #Ensure correct error message is returned
-            assert result == expected_message, f"Expected '{expected_message}' but got '{result}'"   
-
-#--------------------------------------------ADD EXCUSE --------------------------------------------------  
-
-    def test_add_excuse_added_properly(mock_db):  
-        #tests add excuse with new message if excuse collection exists
-        
-        #insert a new message if already inserted into db
-        result = lazyCommit.add_excuse("My doge ate it!") 
-
-        expected_message = "Excuse added successfully." 
-
-        assert result == expected_message, f"Expected '{expected_message}' but got '{result}'"   
-    
-    def test_add_excuse_existing_excuse(mock_db): 
-        #tests proper output for an existing excuse in excuse collection
-        result = lazyCommit.add_excuse("I blame it on my partner") 
-
-        expected_message = "Excuse already exists!" 
-
-        assert result == expected_message, f"Expected '{expected_message}' but got '{result}'" 
-
+#--------------------------------------------ADD EXCUSE ------------------------------------------------------
 
     def test_add_excuse_empty_message(mock_db): 
-        #test if empty message is entered in argument  
-
+        """
+        Test case to check if an empty message is handled correctly
+        """
         result = lazyCommit.add_excuse("") 
-
         expected_message = "No message provided!" 
+        assert result == expected_message, f"Expected '{expected_message}' but got '{result}'"   
+    
+    
+    def test_add_excuse_existing_excuse(mock_db): 
+        """
+        Test case to ensure there are no duplicates
+        """
+        result = lazyCommit.add_excuse("I blame it on my partner") 
+        expected_message = "Excuse already exists!" 
+        assert result == expected_message, f"Expected '{expected_message}' but got '{result}'" 
 
+    
+    def test_add_excuse_with_existing_excuses_list(self, mock_db):
+        """
+        Test case to ensure that an excuse is added correctly when an excuse array already exists 
+        """
+        new_excuse = "This is a new excuse."
+        result = lazyCommit.add_excuse(new_excuse)
+        expected_message = "Excuse added successfully."
         assert result == expected_message, f"Expected '{expected_message}' but got '{result}'"   
 
+    
+    def test_add_excuse_successfully(self, mock_db):
+        """
+        Test case to ensure that an excuse is added correctly when an excuse array doesn't exists 
+        """
+        mock_db["excuses"].find_one.return_value = None # ensure that the collection is empty
+        new_excuse = "This is a new excuse."
+        result = lazyCommit.add_excuse(new_excuse)
+        expected_message = "New excuse document created and excuse added successfully."
+        assert result == expected_message, f"Expected '{expected_message}' but got '{result}'"   
 
 #--------------------------------------------ADD HAIKU --------------------------------------------------  
+
+    def test_add_haiku_empty_message(self, mock_db):
+        """
+        Test case to check if an empty message is handled correctly
+        """
+        result = lazyCommit.add_haiku("") 
+        expected_message = "No message provided!" 
+        assert result == expected_message, f"Expected '{expected_message}' but got '{result}'"   
     
-    #Issue with history storing test info
-    def test_add_haiku_added_properly(mock_db): 
-        #tests add excuse with new message if excuse collection exists
-        
-        #insert a new message if already inserted into db
+    
+    def test_add_haiku_existing_haiku(self, mock_db): 
+        """
+        Test case to ensure there are no duplicates
+        """
+        result = lazyCommit.add_haiku("My code flows like a river")  
+        expected_message = "Haiku already exists!" 
+        assert result == expected_message, f"Expected '{expected_message}' but got '{result}'"
+
+    
+    def test_add_haiku_with_existing_haikus_list(self, mock_db):
+        """
+        Test case to ensure that an excuse is added correctly when an excuse array already exists 
+        """
         result = lazyCommit.add_haiku("Lines of code unfold, logic dancing in the dark, bugs hide, then vanish.") 
-
         expected_message = "Haiku added successfully." 
-
         assert result == expected_message, f"Expected '{expected_message}' but got '{result}'"  
 
 
-    def test_add_haiku_existing_haiku(mock_db): 
-        #tests proper output for an existing excuse in excuse collection 
-
-        #POTENTIAL ERROR 
-        result = lazyCommit.add_haiku("My code flows like a river")  
-
-        expected_message = "Haiku already exists!" 
-
-        assert result == expected_message, f"Expected '{expected_message}' but got '{result}'"
-    
-    def test_add_haiku_empty_message(mock_db):
-        #test if empty message is entered in argument  
-
-        result = lazyCommit.add_haiku("") 
-
-        expected_message = "No message provided!" 
-
+    def test_add_haiku_added_successfully(self, mock_db): 
+        """
+        Test case to ensure that an excuse is added correctly when an excuse array doesn't exists 
+        """
+        mock_db["haikus"].find_one.return_value = None # ensure that the collection is empty
+        result = lazyCommit.add_haiku("new haiku")
+        expected_message = "New haiku document created and haiku added successfully."
         assert result == expected_message, f"Expected '{expected_message}' but got '{result}'"   
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

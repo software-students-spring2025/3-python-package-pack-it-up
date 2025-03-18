@@ -4,49 +4,40 @@ import certifi
 import os
 
 MONGO_URI = os.getenv('MONGO_URI')
-client = MongoClient(
-    "mongodb+srv://sms10010:Password@cluster0.jrofj.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0", tlsCAFile=certifi.where())
+client = MongoClient(MONGO_URI)
 db = client["lazyCommit"]
 commit_collection = db["commitMessages"]
 excuse_collection = db["excuses"]
 haiku_collection = db["haikus"]
-excusesDB = db["excuses"]
-hakiuDB = db["haikus"]
 
 
-# COMPLETED TESTS
 def random_commit_message():
-    messages = list(db.commitMessages.find())
+    messages = list(commit_collection.find())
     if messages:
         all_messages = [msg for doc in messages for msg in doc["messages"]]
         return random.choice(all_messages) if all_messages else "No commit messages found!"
     return "No commit messages found!"
 
 
-# COMPLETED TESTS
 def generate_commit_message(style: str):
-    messages = list(db.commitMessages.find({"style": style}))
+    messages = list(commit_collection.find({"style": style}))
     if messages:
         all_messages = [msg for doc in messages for msg in doc["messages"]]
         return random.choice(all_messages) if all_messages else f"No commit messages found for style: {style}"
     return f"No commit messages found for style: {style}"
 
-# COMPLETED TESTS
-
 
 def git_blame_excuse():
-    excuses_data = list(db.excuses.find())
+    excuses_data = list(excuse_collection.find())
     if excuses_data:
         excuses = excuses_data[0].get("excuses", [])
         if excuses:
             return random.choice(excuses)
     return "No excuses found!"
 
-# COMPLETED TESTS
-
 
 def generate_haiku():
-    haikus = list(db.haikus.find())
+    haikus = list(haiku_collection.find())
     if haikus:
         haiku = haikus[0].get("haikus", [])
         if haiku:
@@ -55,41 +46,31 @@ def generate_haiku():
 
 
 def add_commit_message(style: str, message: str):
-    # if message is empty, return "no message provided"
     if not message:
         return "No message provided!"
 
-    # Queries database to see if style defined exists in database
     existing_style = commit_collection.find_one({"style": style})
-
-    # if it exists, use db #push to add new message to existing array of messags in that style
     if existing_style:
+        if message in existing_style["messages"]:
+            return f"Message already exists in the '{style}' style."
+
         result = commit_collection.update_one(
-            # finds query of "style"
-            # pushes message to that query
             {"style": style},
             {"$push": {"messages": message}}
         )
 
-        # NOTE: resul.modifed_count returns 1 if operation successful, 0 of no modification made
-
-        # modification successful
         if result.modified_count > 0:
             return f"Message added successfully to the '{style}' style."
         else:
-            return f"Message already exists in the '{style}' style."
-
-    # if style does not exist, creates new document with style and message
+            return "Failed to add message."
     else:
         new_commit = {
             "style": style,
             "messages": [message]
         }
 
-        # inserts document into commitMessages collection
         result = commit_collection.insert_one(new_commit)
 
-        # if Mongo returns ID for new document, successful insertion of new query
         if result.inserted_id:
             return f"New style '{style}' created and message added successfully."
         else:
@@ -100,9 +81,7 @@ def add_excuse(message: str):
     if not message:
         return "No message provided!"
 
-    # ERROR?
     # message = message[0]
-
     existing_excuses = excuse_collection.find_one(
         {"excuses": {"$exists": True}})
 
@@ -135,9 +114,7 @@ def add_haiku(message: str):
     if not message:
         return "No message provided!"
 
-    # ERROR?
     # message = message[0]
-
     existing_haikus = haiku_collection.find_one(
         {"haikus": {"$exists": True}})
 
