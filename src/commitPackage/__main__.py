@@ -3,14 +3,15 @@ from commitPackage.lazyCommit import (
     generate_commit_message, random_commit_message,
     git_blame_excuse, generate_haiku, add_commit_message, add_excuse, add_haiku
 )
-
+    
 
 def main():
+    # COMMAND LINE TESTING
     parser = argparse.ArgumentParser(
         description="LazyCommit: Generate commit messages easily!")
 
     parser.add_argument(
-        "--style", type=str, help="Generate a commit message with a specific style (funny, serious, chaotic)")
+        "--style", type=str, help="Generate a commit message with a specific style (funny, serious)")
     parser.add_argument("--random", action="store_true",
                         help="Generate a completely random commit message")
     parser.add_argument("--blame", action="store_true",
@@ -21,10 +22,10 @@ def main():
         "--addMessage", type=str, nargs=2, metavar=('style', 'message'),
         help="Add a commit message to a specific style. Requires style and message as arguments (e.g., --addMessage funny 'Fixed a typo')")
     parser.add_argument(
-        "--addExcuse", type=str, nargs=1, metavar=('message'),
+        "--addExcuse", type=str, metavar=('message'),
         help="Add a git excuse. Requires message as an arguments (e.g., --addExcuse 'The intern wrote this line')")
     parser.add_argument(
-        "--addHaiku", type=str, nargs=1, metavar=('message'),
+        "--addHaiku", type=str, metavar=('message'),
         help="Add a git haiku. Requires message as an arguments (e.g., --addHaiku 'Code flows like the stream, Errors hidden in the mist Hope this works for you.')")
 
     args = parser.parse_args()
@@ -48,7 +49,6 @@ def main():
         print(generate_haiku())
     else:
         parser.print_help()
-
 
 if __name__ == "__main__":
     main()
