@@ -4,8 +4,7 @@ import certifi
 import os
 
 MONGO_URI = os.getenv('MONGO_URI')
-client = MongoClient(
-    "mongodb+srv://sms10010:Password@cluster0.jrofj.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0", tlsCAFile=certifi.where())
+client = MongoClient(MONGO_URI)
 db = client["lazyCommit"]
 commit_collection = db["commitMessages"]
 excuse_collection = db["excuses"]
@@ -29,9 +28,6 @@ def generate_commit_message(style: str):
 
 def git_blame_excuse():
     excuses_data = list(excuse_collection.find())
-
-    print("Checking if mock_db is being accessed:", excuses_data)
-    
     if excuses_data:
         excuses = excuses_data[0].get("excuses", [])
         if excuses:
@@ -51,9 +47,12 @@ def generate_haiku():
 def add_commit_message(style: str, message: str):
     if not message:
         return "No message provided!"
-    existing_style = commit_collection.find_one({"style": style})
 
+    existing_style = commit_collection.find_one({"style": style})
     if existing_style:
+        if message in existing_style["messages"]:
+            return f"Message already exists in the '{style}' style."
+
         result = commit_collection.update_one(
             {"style": style},
             {"$push": {"messages": message}}
@@ -62,7 +61,7 @@ def add_commit_message(style: str, message: str):
         if result.modified_count > 0:
             return f"Message added successfully to the '{style}' style."
         else:
-            return f"Message already exists in the '{style}' style."
+            return "Failed to add message."
     else:
         new_commit = {
             "style": style,
@@ -79,15 +78,10 @@ def add_commit_message(style: str, message: str):
 def add_excuse(message: str):
     if not message:
         return "No message provided!"
-    
-    print("What is in the arguement?: ", {message})
 
     #message = message[0]
     existing_excuses = excuse_collection.find_one(
         {"excuses": {"$exists": True}})
-    
-    print(type(existing_excuses))
-    print("Retrieve existing excuses document:", existing_excuses)
 
     if existing_excuses:
         if message in existing_excuses["excuses"]:
@@ -117,10 +111,10 @@ def add_haiku(message: str):
     if not message:
         return "No message provided!"
 
-    message = message[0]
+    #message = message[0]
     existing_haikus = haiku_collection.find_one(
         {"haikus": {"$exists": True}})
-
+        
     if existing_haikus:
         if message in existing_haikus["haikus"]:
             return "Haiku already exists!"
