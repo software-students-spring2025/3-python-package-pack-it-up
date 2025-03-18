@@ -46,30 +46,25 @@ print(add_haiku('Breeze whispers through trees, Golden leaves dance on the wind,
 Or try running the package as a script:
 
 ```
-python -m src.commitPackage --random
+python -m commitPackage --random
 
-python -m src.commitPackage --style funny
-python -m src.commitPackage --style serious
-python -m src.commitPackage --style professional
-python -m src.commitPackage --style technical
+python -m commitPackage --style funny
+python -m commitPackage --style serious
+python -m commitPackage --style professional
+python -m commitPackage --style technical
 
-python -m src.commitPackage --blame
+python -m commitPackage --blame
 
-python -m src.commitPackage --haiku
+python -m commitPackage --haiku
 
-python -m src.commitPackage --addMessage funny "Fixed a typo"
-python -m src.commitPackage --addMessage serious "Refactored database access layer"
-python -m src.commitPackage --addMessage chaotic "DO NOT DELETE - I'm warning you"
+python -m commitPackage --addMessage funny "Fixed a typo"
+python -m commitPackage --addMessage serious "Refactored database access layer"
+python -m commitPackage --addMessage chaotic "DO NOT DELETE - I'm warning you"
 
-python -m src.commitPackage --addExcuse "The intern wrote this line"
+python -m commitPackage --addExcuse "The intern wrote this line"
 
-python -m src.commitPackage --addHaiku "Branches intertwine, Merge conflicts are poetry, Git writes our stories."
+python -m commitPackage --addHaiku "Branches intertwine, Merge conflicts are poetry, Git writes our stories."
 ```
-
-
-
-
-
 
 ## Running [`exampleProgram.py`](exampleProgram.py)
 
