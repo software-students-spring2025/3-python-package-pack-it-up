@@ -34,10 +34,10 @@ def main():
         style, message = args.addMessage
         print(add_commit_message(style, message))
     elif args.addExcuse:
-        message = args.addExcuse
+        message = args.addExcuse[0]
         print(add_excuse(message))
     elif args.addHaiku:
-        message = args.addHaiku
+        message = args.addHaiku[0]
         print(add_haiku(message))
     elif args.style:
         print(generate_commit_message(args.style))

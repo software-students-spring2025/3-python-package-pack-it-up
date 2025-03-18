@@ -10,6 +10,7 @@ commit_collection = db["commitMessages"]
 excuse_collection = db["excuses"]
 haiku_collection = db["haikus"]
 
+
 def random_commit_message():
     messages = list(commit_collection.find())
     if messages:
@@ -75,6 +76,7 @@ def add_commit_message(style: str, message: str):
         else:
             return "Failed to add message."
 
+
 def add_excuse(message: str):
     if not message:
         return "No message provided!"
@@ -106,13 +108,14 @@ def add_excuse(message: str):
         else:
             return "Failed to create a new excuse document."
 
+
 def add_haiku(message: str):
     if not message:
         return "No message provided!"
 
     existing_haikus = haiku_collection.find_one(
         {"haikus": {"$exists": True}})
-        
+
     if existing_haikus:
         if message in existing_haikus["haikus"]:
             return "Haiku already exists!"
