@@ -80,6 +80,68 @@ To run [`exampleProgram.py`](exampleProgram.py), make sure you are in your virtu
 python exampleProgram.py
 ```
 
+## Deveopment Guide
+
+### Clone the Respository 
+
+```
+git clone git@github.com:software-students-spring2025/3-python-package-pack-it-up.git
+cd 3-python-package-pack-it-up
+```
+
+### Set up Virtual Environment
+
+```
+pip install pipenv
+pipenv shell
+```
+
+### Run Tests
+
+Units test are provided in the tests directory. To run those use:
+```
+python -m pytest 
+```
+
+or  this if you have a python3:
+```
+python3 -m pytest 
+```
+
+### Build and Publish Package 
+
+To build the package and upload it to TestPyPI:
+
+```
+python -m build
+twine upload -r testpypi dist/*
+```
+
+To publish it to PyPI:
+```
+twine upload dist/*
+```
+
+## Contribute
+
+To contribute to this project follow these steps:
+
+1. Clone the repository
+2. Create a feature branch 
+```
+git checkout -b feature-name.
+```
+3. Commit your changes 
+```
+git add .
+git commit -m "Added new feature"
+```
+4. Push to your branch 
+```
+git push origin feature-name
+```
+5. Open a pull request.
+
 # Function Documentation
 
 ## random_commit_message()
@@ -185,62 +247,3 @@ Allows a user to create a new haiku
 - `str`: if the haiku already exists in the database, a message outlining that will be displayed
 - `str`: if there are issues with saving the haiku an error message will be displayed## Deveopment Guide
 
-### Clone the Respository 
-
-```
-git clone git@github.com:software-students-spring2025/3-python-package-pack-it-up.git
-cd 3-python-package-pack-it-up
-```
-
-### Set up Virtual Environment
-
-```
-pip install pipenv
-pipenv shell
-```
-
-### Run Tests
-
-Units test are provided in the tests directory. To run those use:
-```
-python -m pytest 
-```
-
-or  this if you have a python3:
-```
-python3 -m pytest 
-```
-
-### Build and Publish Package 
-
-To build the package and upload it to TestPyPI:
-
-```
-python -m build
-twine upload -r testpypi dist/*
-```
-
-To publish it to PyPI:
-```
-twine upload dist/*
-```
-
-## Contribute
-
-To contribute to this project follow these steps:
-
-1. Clone the repository
-2. Create a feature branch 
-```
-git checkout -b feature-name.
-```
-3. Commit your changes 
-```
-git add .
-git commit -m "Added new feature"
-```
-4. Push to your branch 
-```
-git push origin feature-name
-```
-5. Open a pull request.
