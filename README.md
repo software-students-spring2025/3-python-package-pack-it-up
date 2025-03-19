@@ -46,7 +46,7 @@ Ensure the .env file is not committed by adding it to .gitignore:
 ```
 echo ".env" >> .gitignore
 ```
-For more details, check [env.example](https://github.com/software-students-spring2025/3-python-package-pack-it-up/blob/main/env.example).
+For more details, check [env.example](https://github.com/software-students-spring2025/3-python-package-pack-it-up/blob/tests/env.example).
 
 ### Set up Virtual Environment
 ```
