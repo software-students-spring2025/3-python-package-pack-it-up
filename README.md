@@ -17,7 +17,7 @@ LazyCommit is a fun and lighthearted package for generating random and styled Gi
 
 ## Installation
 ```
-pip install commitPackage
+pip install commitPackage==0.1.2
 ```
 
 ## Development Guide
