@@ -13,11 +13,11 @@
 
 LazyCommit is a fun and lighthearted package for generating random and styled Git commit messages.
 
-## PyPI Package Link
+## [PyPI Package Link](https://pypi.org/project/commitPackage/0.1.2/)
 
 ## Installation
 ```
-pip install commitPackage
+pip install commitPackage==0.1.2
 ```
 
 ## Development Guide
@@ -109,7 +109,7 @@ python -m commitPackage --addExcuse "The intern wrote this line"
 python -m commitPackage --addHaiku "Branches intertwine, Merge conflicts are poetry, Git writes our stories."
 ```
 
-## Running [`exampleProgram.py`](exampleProgram.py)
+## Running [`exampleProgram.py`](https://github.com/software-students-spring2025/3-python-package-pack-it-up/blob/main/exampleProgram.py)
 
 To run [`exampleProgram.py`](https://github.com/software-students-spring2025/3-python-package-pack-it-up/blob/main/exampleProgram.py), make sure you are in your virtual environment and have all dependencies installed. Then, run the following command:
 
@@ -152,8 +152,9 @@ twine upload dist/*
 ```
 
 ### Run Tests
-
 Units test are provided in the tests directory. To run those use:
+1. Install pytest into the virtual environment, e.g. pipenv install pytest
+2. Run the following command from the main project directory:
 ```
 python -m pytest 
 ```
