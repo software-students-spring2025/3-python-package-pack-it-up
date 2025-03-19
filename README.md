@@ -11,18 +11,55 @@
 
 ## About LazyCommit
 
-A fun and lighthearted package for generating random and styled Git commit messages.
+LazyCommit is a fun and lighthearted package for generating random and styled Git commit messages.
 
 ## PyPI Package Link
 
 ## Installation
+```
+pip install commitPackage
+```
+
+## Development Guide
+
+### Clone the Respository 
+
+```
+git clone git@github.com:software-students-spring2025/3-python-package-pack-it-up.git
+cd 3-python-package-pack-it-up
+```
+
+### Setting up the environment variables
+To ensure proper access to the database, you need a .env file.
+Run the following command in the root directory of the project to create a .env file:
+```
+touch .env
+nano .env
+```
+Once the file opens in a text editor, set the required values as follow:
+```
+MONGO_DBNAME=lazyCommit
+MONGO_URI=your_mongodb_connection_uri
+DEBUG=True
+```
+Ensure the .env file is not committed by adding it to .gitignore:
+```
+echo ".env" >> .gitignore
+```
+For more details, check [env.example](https://github.com/software-students-spring2025/3-python-package-pack-it-up/blob/main/env.example).
+
+### Set up Virtual Environment
+```
+pip install pipenv
+pipenv shell
+```
 
 ## Usage
 
 Import the package and use the following functions:
 
 ```
-from src.commitPackage.lazyCommit import (
+from commitPackage.lazyCommit import (
     generate_commit_message, random_commit_message,
     git_blame_excuse, generate_haiku, add_commit_message, add_excuse, add_haiku
 )
@@ -74,39 +111,31 @@ python -m commitPackage --addHaiku "Branches intertwine, Merge conflicts are poe
 
 ## Running [`exampleProgram.py`](exampleProgram.py)
 
-To run [`exampleProgram.py`](exampleProgram.py), make sure you are in your virtual environment and have all dependencies installed. Then, run the following command:
+To run [`exampleProgram.py`](https://github.com/software-students-spring2025/3-python-package-pack-it-up/blob/main/exampleProgram.py), make sure you are in your virtual environment and have all dependencies installed. Then, run the following command:
 
 ```bash
 python exampleProgram.py
 ```
 
-## Deveopment Guide
+## Contribute
 
-### Clone the Respository 
+To contribute to this project follow these steps:
 
+1. Follow the steps mentioned in the [Development Guide](#development-guide) to clone repository and set up the virtual environment
+2. Create and switch to a new feature branch
 ```
-git clone git@github.com:software-students-spring2025/3-python-package-pack-it-up.git
-cd 3-python-package-pack-it-up
+git checkout -b feature-name.
 ```
-
-### Set up Virtual Environment
-
+3. Commit your changes 
 ```
-pip install pipenv
-pipenv shell
+git add .
+git commit -m "Added new feature"
 ```
-
-### Run Tests
-
-Units test are provided in the tests directory. To run those use:
+4. Push to your branch 
 ```
-python -m pytest 
+git push origin feature-name
 ```
-
-or  this if you have a python3:
-```
-python3 -m pytest 
-```
+5. Open a pull request through github to merge your branch to the main
 
 ### Build and Publish Package 
 
@@ -122,25 +151,16 @@ To publish it to PyPI:
 twine upload dist/*
 ```
 
-## Contribute
+### Run Tests
 
-To contribute to this project follow these steps:
-
-1. Clone the repository
-2. Create a feature branch 
+Units test are provided in the tests directory. To run those use:
 ```
-git checkout -b feature-name.
+python -m pytest 
 ```
-3. Commit your changes 
+or  this if you have a python3:
 ```
-git add .
-git commit -m "Added new feature"
+python3 -m pytest 
 ```
-4. Push to your branch 
-```
-git push origin feature-name
-```
-5. Open a pull request.
 
 # Function Documentation
 
