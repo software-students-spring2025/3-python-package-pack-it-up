@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "commitPackage"
 description = "A fun and lighthearted package for generating random and styled Git commit messages."
-version = "0.1.0"
+version = "0.1.2"
 authors = [
   { name="Sophia", email="sms10010@nyu.edu" },
 ]
